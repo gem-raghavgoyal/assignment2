@@ -54,4 +54,19 @@ public class ProjectRepo {
         }
         return CompletableFuture.completedFuture(project);
     }
+    public Project getProjectByProjectId(Integer projectId){
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
+        parameterSource.addValue("projectId", projectId);
+        Project project;
+        try {
+            project = dbRepository.queryForObject(GET_PROJECT_BY_ID,
+                    parameterSource, BeanPropertyRowMapper.newInstance(Project.class));
+        } catch (EmptyResultDataAccessException e) {
+            // if specified project id does not exist
+            throw new CustomException("No record exist for projectId - " + projectId, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            throw new CustomException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return project;
+    }
 }

@@ -13,12 +13,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @Service
 public class StudentService {
 
     private static final Logger log = LoggerFactory.getLogger(StudentRepository.class);
+
+    @Autowired
+    private ExecutorsService executorsService;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -48,7 +53,7 @@ public class StudentService {
         return studentList;
     }
 
-    public StudentProjectDetails getAllStudentProjectsById(Integer studentId){
+    public StudentProjectDetails getAllStudentsProjectsById(Integer studentId){
         List<StudentProjectMapping> studentProjectMappings =  studentRepository.getAllProjectOfStudent(studentId);
         List<CompletableFuture<Project>> projectList = new ArrayList<>();
         studentProjectMappings.forEach(studentProjectMapping -> {
@@ -67,6 +72,31 @@ public class StudentService {
                     projects.add(project);
             } catch (Exception e) {
                 log.error("Exception occurred while getting projectList from future object");
+            }
+        }
+        return mapStudentProjectDetails(student,projects);
+    }
+
+    /* Get all projects using executor service*/
+    public StudentProjectDetails getAllStudentProjectById(Integer studentId){
+        List<StudentProjectMapping> studentProjectMappings =  StudentRepository.getAllProjectOfStudent(studentId);
+        List<Callable<Project>> callables = new ArrayList<>();
+        studentProjectMappings.forEach(studentProjectMapping -> {
+            Callable<Project>  callable = () ->{
+                Project project = projectRepo.getProjectByProjectId(studentProjectMapping.getProjectId());
+                return project;
+            };
+            callables.add(callable);
+        });
+        List<Future<Project>> futureProjects = executorsService.execute(callables);
+        Student student = getStudentById(studentId);
+        List<Project> projects = new ArrayList<>();
+        for(Future<Project> future: futureProjects){
+            try{
+                Project project = future.get();
+                projects.add(project);
+            }catch (Exception ex){
+                log.error("Exception occurred while fetching project detail from future object", ex);
             }
         }
         return mapStudentProjectDetails(student,projects);

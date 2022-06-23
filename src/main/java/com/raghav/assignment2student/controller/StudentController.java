@@ -51,7 +51,7 @@ public class StudentController {
     @GetMapping("/student/projects/studentId")
     public Response<StudentProjectDetails> getAllProjectsOfStudent(@PathVariable int studentId){
         Response<StudentProjectDetails> response = new Response<>();
-        StudentProjectDetails studentProjectDetails = studentService.getAllStudentProjectsById(studentId);
+        StudentProjectDetails studentProjectDetails = studentService.getAllStudentProjectById(studentId);
         if(studentProjectDetails != null){
             response.setData(studentProjectDetails);
             response.setSuccessMessage("Got all projects of " + studentProjectDetails.getStudentName());

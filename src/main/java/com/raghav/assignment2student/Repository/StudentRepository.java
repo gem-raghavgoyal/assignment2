@@ -24,7 +24,7 @@ public class StudentRepository {
     private static final Logger log = LoggerFactory.getLogger(StudentRepository.class);
 
     @Autowired
-    private NamedParameterJdbcTemplate dbRepository;
+    private static NamedParameterJdbcTemplate dbRepository;
 
     public static final String GET_STUDENT_DETAIL_BY_ID = "SELECT * FROM STUDENT WHERE studentId=:studentId";
     public static final String GET_ALL_STUDENT = "SELECT * FROM STUDENT";
@@ -59,7 +59,7 @@ public class StudentRepository {
         return CompletableFuture.completedFuture(studentList);
     }
 
-    public List<StudentProjectMapping> getAllProjectOfStudent(Integer studentId){
+    public static List<StudentProjectMapping> getAllProjectOfStudent(Integer studentId){
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("studentId", studentId);
         List<StudentProjectMapping> studentProjects = new ArrayList<>();
